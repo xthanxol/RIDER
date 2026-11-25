@@ -72,7 +72,7 @@ const COL={grey:"#8a9199",blue:"#3b82f6",green:"#22c55e"};
 let orders=[],map,mk={},iw;
 async function load(){if(DB){try{const r=await(await fetch(DB+"/orders.json")).json();return r?Object.values(r):[]}catch(_){return orders}}try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(_){return[]}}
 const ready=l=>orders.filter(o=>o.loc==l&&o.status=="READY");
-function state(l){if(ready(l).length)return"blue";return orders.some(o=>o.loc==l&&o.status=="DELIVERED"&&Date.now()-(o.deliveredAt||0)<6e5)?"green":"grey"}
+function state(l){if(ready(l).length)return"blue";return orders.some(o=>o.loc==l&&o.status=="DELIVERED"&&Date.now()-(o.deliveredAt||0)<5e3)?"green":"grey"}
 async function refresh(){orders=await load();drawPanel();drawMarkers()}
 function drawPanel(){$("#list").innerHTML=Object.keys(LOC).map(l=>{const c=state(l),a=ready(l);
 return `<div class="loc ${c}"><div class="lh" data-f="${l}"><i></i><b>${l}</b><span>${a.length?a.length+" to deliver":c=="green"?"Delivered":"No delivery"}</span></div>${a.map(o=>`<div class="row"><span>${esc(o.name)}</span><span>${peso(o.total)}</span></div>`).join("")}${a.length?`<button class="btn" data-l="${l}">Mark delivered (turn green)</button>`:""}</div>`}).join("")}
@@ -83,6 +83,7 @@ const icon=(l,c)=>L.divIcon({className:"pt",html:`<i style="background:${c}"></i
 function drawMarkers(){for(const l in LOC){if(!mk[l])mk[l]=L.marker(LOC[l],{icon:icon(l,COL[state(l)]),title:l}).addTo(map).bindPopup(()=>`<b>${l}</b><br>${ready(l).length} to deliver`);else mk[l].setIcon(icon(l,COL[state(l)]))}}
 map=L.map("map");L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:"© OpenStreetMap contributors"}).addTo(map);map.fitBounds(Object.values(LOC),{padding:[60,60]});drawMarkers();
 addEventListener("storage",e=>{if(e.key==KEY)refresh()});try{new BroadcastChannel(KEY).onmessage=refresh}catch(_){}
+let sig="";setInterval(()=>{const s=Object.keys(LOC).map(state).join();if(s!=sig){sig=s;drawPanel();drawMarkers()}},1000);
 setInterval(refresh,3000);refresh();
 </script>
 </body>
