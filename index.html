@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FOODLINE Rider – Deliveries</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 :root{--charcoal:#15191d;--charcoal-2:#1e2429;--steel:#2b3238;--steel-light:#4a545c;--amber:#e0342a;--yellow:#ffd93d;--gray:#8a9199;--soft:#c4cbd1;--white:#fff}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
@@ -52,18 +53,22 @@ header{background:var(--charcoal);box-shadow:0 6px 24px #0007}
 .loc.blue{border-left-color:#3b82f6}.loc.green{border-left-color:#22c55e}
 .lh{display:flex;align-items:center;cursor:pointer}.lh b{font:500 1rem Oswald,sans-serif;text-transform:uppercase}.lh span{margin-left:auto;color:var(--gray);font-size:.85rem}
 @media(max-width:900px){.page{grid-template-columns:1fr;grid-template-rows:55vh auto;height:auto}}
+#map{position:relative;z-index:0}
+.leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9)}
+.pt i{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #0006}
+.pt span{position:absolute;left:-60px;top:14px;width:120px;text-align:center;font:700 12px Arial,sans-serif;color:#fff;text-shadow:-1px -1px #15191d,1px -1px #15191d,-1px 1px #15191d,1px 1px #15191d}
 </style>
 </head>
 <body>
 <header><div class="wrap"><div class="logo">FOOD<span>LINE</span><small>Rider</small></div><div class="live">Live deliveries</div></div></header>
 <div class="page"><div id="map"></div>
 <aside class="side"><h3>Delivery points</h3><div class="legend"><span><i></i>No delivery</span><span><i class="b" style="background:#3b82f6"></i>To deliver</span><span><i style="background:#22c55e"></i>Delivered</span></div><div id="list"></div></aside></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-const DB="",MAPS_KEY="",KEY="foodline_orders",$=s=>document.querySelector(s),peso=n=>"₱"+n.toLocaleString();
+const DB="https://foodline-4576d-default-rtdb.asia-southeast1.firebasedatabase.app/",KEY="foodline_orders",$=s=>document.querySelector(s),peso=n=>"₱"+n.toLocaleString();
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const LOC={Ligao:[13.2403,123.5353],Oas:[13.2578,123.4944],Polangui:[13.2958,123.4872],Guinobatan:[13.19,123.6083],"Camarines Norte":[14.1122,122.9553],"Camarines Sur":[13.65,123.4],Naga:[13.6218,123.1948],Sorsogon:[12.9742,124.0057],Pili:[13.5833,123.2833]};
 const COL={grey:"#8a9199",blue:"#3b82f6",green:"#22c55e"};
-const DARK=[{elementType:"geometry",stylers:[{color:"#1e2429"}]},{elementType:"labels.text.fill",stylers:[{color:"#c4cbd1"}]},{elementType:"labels.text.stroke",stylers:[{color:"#15191d"}]},{featureType:"water",elementType:"geometry",stylers:[{color:"#0f1316"}]},{featureType:"road",elementType:"geometry",stylers:[{color:"#2b3238"}]}];
 let orders=[],map,mk={},iw;
 async function load(){if(DB){try{const r=await(await fetch(DB+"/orders.json")).json();return r?Object.values(r):[]}catch(_){return orders}}try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(_){return[]}}
 const ready=l=>orders.filter(o=>o.loc==l&&o.status=="READY");
@@ -71,14 +76,12 @@ function state(l){if(ready(l).length)return"blue";return orders.some(o=>o.loc==l
 async function refresh(){orders=await load();drawPanel();drawMarkers()}
 function drawPanel(){$("#list").innerHTML=Object.keys(LOC).map(l=>{const c=state(l),a=ready(l);
 return `<div class="loc ${c}"><div class="lh" data-f="${l}"><i></i><b>${l}</b><span>${a.length?a.length+" to deliver":c=="green"?"Delivered":"No delivery"}</span></div>${a.map(o=>`<div class="row"><span>${esc(o.name)}</span><span>${peso(o.total)}</span></div>`).join("")}${a.length?`<button class="btn" data-l="${l}">Mark delivered (turn green)</button>`:""}</div>`}).join("")}
-$("#list").onclick=e=>{const l=e.target.dataset.l,f=e.target.closest(".lh");if(l)deliver(l);else if(f&&map){map.panTo({lat:LOC[f.dataset.f][0],lng:LOC[f.dataset.f][1]});map.setZoom(11)}};
+$("#list").onclick=e=>{const l=e.target.dataset.l,f=e.target.closest(".lh");if(l)deliver(l);else if(f&&map){map.setView(LOC[f.dataset.f],11)}};
 async function deliver(l){const a=ready(l),t=Date.now();a.forEach(o=>{o.status="DELIVERED";o.deliveredAt=t});
 try{if(DB)await Promise.all(a.map(o=>fetch(DB+"/orders/"+o.id+".json",{method:"PATCH",body:JSON.stringify({status:"DELIVERED",deliveredAt:t})})));else{localStorage.setItem(KEY,JSON.stringify(orders));try{new BroadcastChannel(KEY).postMessage("upd")}catch(_){}}}catch(_){}refresh()}
-const icon=(l,c)=>({url:"data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="52"><circle cx="60" cy="14" r="11" fill="${c}" stroke="#fff" stroke-width="3"/><text x="60" y="44" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#fff" stroke="#15191d" stroke-width="3" paint-order="stroke">${l}</text></svg>`),scaledSize:new google.maps.Size(120,52),anchor:new google.maps.Point(60,14)});
-function drawMarkers(){if(!map)return;for(const l in LOC){if(!mk[l]){mk[l]=new google.maps.Marker({map,title:l,position:{lat:LOC[l][0],lng:LOC[l][1]}});mk[l].addListener("click",()=>{iw.setContent(`<div style="color:#15191d"><b>${l}</b><br>${ready(l).length} to deliver</div>`);iw.open(map,mk[l])})}mk[l].setIcon(icon(l,COL[state(l)]))}}
-window.initMap=()=>{map=new google.maps.Map($("#map"),{center:{lat:13.5,lng:123.4},zoom:8,styles:DARK,mapTypeControl:false,streetViewControl:false});iw=new google.maps.InfoWindow();const b=new google.maps.LatLngBounds();for(const l in LOC)b.extend({lat:LOC[l][0],lng:LOC[l][1]});map.fitBounds(b,60);drawMarkers()};
-window.gm_authFailure=()=>{$("#map").innerHTML='<div class="nomap">Google Maps rejected the API key. Check the key and that Maps JavaScript API is enabled for this website address.</div>'};
-if(MAPS_KEY){const s=document.createElement("script");s.src="https://maps.googleapis.com/maps/api/js?key="+MAPS_KEY+"&callback=initMap";s.async=true;document.head.append(s)}else $("#map").innerHTML='<div class="nomap">Add your Google Maps API key to MAPS_KEY at the top of this file to show the map.</div>';
+const icon=(l,c)=>L.divIcon({className:"pt",html:`<i style="background:${c}"></i><span>${l}</span>`,iconSize:[0,0]});
+function drawMarkers(){for(const l in LOC){if(!mk[l])mk[l]=L.marker(LOC[l],{icon:icon(l,COL[state(l)]),title:l}).addTo(map).bindPopup(()=>`<b>${l}</b><br>${ready(l).length} to deliver`);else mk[l].setIcon(icon(l,COL[state(l)]))}}
+map=L.map("map");L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:"© OpenStreetMap contributors"}).addTo(map);map.fitBounds(Object.values(LOC),{padding:[60,60]});drawMarkers();
 addEventListener("storage",e=>{if(e.key==KEY)refresh()});try{new BroadcastChannel(KEY).onmessage=refresh}catch(_){}
 setInterval(refresh,3000);refresh();
 </script>
