@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FOODLINE Kitchen – Seller orders</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>FOODLINE Rider – Deliveries</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--charcoal:#15191d;--charcoal-2:#1e2429;--steel:#2b3238;--steel-light:#4a545c;--amber:#e0342a;--yellow:#ffd93d;--gray:#8a9199;--soft:#c4cbd1;--white:#fff}
@@ -39,54 +38,49 @@ section h2{font-size:2.1rem;text-transform:uppercase;margin-bottom:20px}
 .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed #ffffff29}
 
 .live{font-size:.85rem;color:var(--soft)}.live:before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:#3ddc97;margin-right:8px}
-.hero{padding-bottom:90px}
-.strip{position:relative;z-index:4;margin-top:-50px}
-.strip .wrap{background:var(--charcoal-2);display:grid;grid-template-columns:repeat(3,1fr);box-shadow:0 22px 44px #0007;padding:0}
-.stat{padding:28px 22px;text-align:center;border-right:1px solid #ffffff14}.stat:last-child{border:0}
-.stat strong{display:block;font:600 2.4rem Oswald,sans-serif;color:var(--amber)}
-.stat span{font-size:.82rem;color:#a7aeb4;text-transform:uppercase;letter-spacing:.6px}
-main.wrap{padding:50px 28px 70px}
-.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;align-items:start}
-.o{background:var(--charcoal-2);border:1px solid #ffffff1f;border-left:6px solid var(--amber);padding:18px}.o.READY{border-left-color:var(--yellow)}
-.top{display:flex;justify-content:space-between;align-items:baseline}.top h4{font-size:1.3rem;text-transform:uppercase}.top span{color:var(--gray);font-size:.8rem}
-.who{margin:6px 0 12px}.who b{display:block}.who span{color:var(--soft)}
-.sum{display:flex;justify-content:space-between;padding:12px 0;font:600 1.15rem Oswald,sans-serif}.sum span:last-child{color:var(--amber)}
-.seg{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--steel)}
-.seg button{padding:11px;font:600 .9rem Oswald,sans-serif;letter-spacing:.5px;background:var(--steel);color:var(--soft)}
-.seg button:not(.on):hover{background:var(--steel-light)}
-.seg .on.pr{background:var(--amber);color:var(--charcoal)}.seg .on.rd{background:var(--yellow);color:var(--charcoal)}
-.none{border:1px dashed var(--steel-light);padding:22px;color:var(--gray);grid-column:1/-1}
-@media(max-width:700px){.strip .wrap{grid-template-columns:1fr}.stat{border-right:0;border-bottom:1px solid #ffffff14}}
+header{background:var(--charcoal);box-shadow:0 6px 24px #0007}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 22px;font:600 .95rem Oswald,sans-serif;background:var(--amber);color:var(--charcoal);clip-path:polygon(0 0,100% 0,100% 70%,92% 100%,0 100%);transition:background .18s;margin-top:10px}.btn:hover{background:var(--white)}
+.page{display:grid;grid-template-columns:1fr 380px;height:100vh;padding-top:70px}
+#map{height:100%;background:var(--charcoal-2)}.nomap{padding:40px;color:var(--soft)}
+.side{background:var(--charcoal-2);border-left:4px solid var(--amber);display:flex;flex-direction:column;min-height:0}
+.side h3{padding:14px 18px;font-size:1.3rem;text-transform:uppercase;background:var(--steel)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;padding:12px 18px;font-size:.8rem;color:var(--soft)}
+.legend i,.loc i{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:6px;background:#8a9199}
+.legend .b,.loc.blue i{background:#3b82f6}.legend .g,.loc.green i{background:#22c55e}
+#list{overflow:auto;flex:1;padding:0 18px 18px;display:grid;gap:10px;align-content:start}
+.loc{border:1px solid #ffffff1f;border-left:5px solid #8a9199;padding:12px;background:var(--charcoal)}
+.loc.blue{border-left-color:#3b82f6}.loc.green{border-left-color:#22c55e}
+.lh{display:flex;align-items:center;cursor:pointer}.lh b{font:500 1rem Oswald,sans-serif;text-transform:uppercase}.lh span{margin-left:auto;color:var(--gray);font-size:.85rem}
+@media(max-width:900px){.page{grid-template-columns:1fr;grid-template-rows:55vh auto;height:auto}}
 </style>
 </head>
 <body>
-<header><div class="wrap"><div class="logo">FOOD<span>LINE</span><small>Kitchen</small></div><div class="live">Listening for orders</div></div></header>
-<div class="hero"><div class="wrap"><div class="tag">Seller dashboard</div><h1>Incoming <em>orders</em></h1><p class="lead">New customer orders appear here automatically. Mark each one READY when it is packed and waiting for the rider.</p></div></div>
-<div class="strip"><div class="wrap"><div class="stat"><strong id="n0">0</strong><span>Total orders</span></div><div class="stat"><strong id="n1">0</strong><span>Preparing</span></div><div class="stat"><strong id="n2">0</strong><span>Ready for rider</span></div></div></div>
-<main class="wrap"><section><div class="marker"><span class="idx">01</span><span class="line"></span><span class="label">In the kitchen</span></div><h2>Preparing</h2><div class="list" id="lp"></div></section>
-<section><div class="marker"><span class="idx">02</span><span class="line"></span><span class="label">Forwarded to rider</span></div><h2>Ready for rider</h2><div class="list" id="lr"></div></section></main>
+<header><div class="wrap"><div class="logo">FOOD<span>LINE</span><small>Rider</small></div><div class="live">Live deliveries</div></div></header>
+<div class="page"><div id="map"></div>
+<aside class="side"><h3>Delivery points</h3><div class="legend"><span><i></i>No delivery</span><span><i class="b" style="background:#3b82f6"></i>To deliver</span><span><i style="background:#22c55e"></i>Delivered</span></div><div id="list"></div></aside></div>
 <script>
-const KEY="foodline_orders",$=s=>document.querySelector(s),peso=n=>"₱"+n.toLocaleString();
+const DB="",MAPS_KEY="",KEY="foodline_orders",$=s=>document.querySelector(s),peso=n=>"₱"+n.toLocaleString();
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(_){return[]}};
-function card(o){const t=new Date(o.at).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
-return `<article class="o ${o.status}"><div class="top"><h4>Order ${esc(o.id)}</h4><span>${t}</span></div>
-<div class="who"><b>${esc(o.name)}</b><span>${esc(o.loc)}</span></div>
-${o.items.map(i=>`<div class="row"><span>${i.e} ${esc(i.n)} × ${i.q}</span><span>${peso(i.p*i.q)}</span></div>`).join("")}
-<div class="sum"><span>Total</span><span>${peso(o.total)}</span></div>
-<div class="seg" role="group" aria-label="Order status"><button class="pr ${o.status=="PREPARING"?"on":""}" data-id="${esc(o.id)}" data-s="PREPARING">PREPARING</button><button class="rd ${o.status=="READY"?"on":""}" data-id="${esc(o.id)}" data-s="READY">READY</button></div></article>`}
-function paint(){const all=load().sort((a,b)=>b.at-a.at),p=all.filter(o=>o.status!="READY"),r=all.filter(o=>o.status=="READY");
-$("#n0").textContent=all.length;$("#n1").textContent=p.length;$("#n2").textContent=r.length;
-$("#lp").innerHTML=p.length?p.map(card).join(""):'<div class="none">No orders being prepared. New customer orders appear here automatically.</div>';
-$("#lr").innerHTML=r.length?r.map(card).join(""):'<div class="none">Orders you mark READY move here and are forwarded to the rider site.</div>'}
-document.addEventListener("click",e=>{const b=e.target.closest("button[data-id]");if(!b)return;
-const all=load(),o=all.find(x=>x.id===b.dataset.id);if(!o||o.status===b.dataset.s)return;
-o.status=b.dataset.s;if(o.status=="READY")o.readyAt=Date.now();else delete o.readyAt;
-try{localStorage.setItem(KEY,JSON.stringify(all));new BroadcastChannel(KEY).postMessage("upd")}catch(_){}paint()});
-addEventListener("storage",e=>{if(e.key===KEY)paint()});
-try{new BroadcastChannel(KEY).onmessage=paint}catch(_){}
-addEventListener("scroll",()=>document.querySelector("header").classList.toggle("scrolled",scrollY>40),{passive:true});
-setInterval(paint,5000);paint();
+const LOC={Ligao:[13.2403,123.5353],Oas:[13.2578,123.4944],Polangui:[13.2958,123.4872],Guinobatan:[13.19,123.6083],"Camarines Norte":[14.1122,122.9553],"Camarines Sur":[13.65,123.4],Naga:[13.6218,123.1948],Sorsogon:[12.9742,124.0057],Pili:[13.5833,123.2833]};
+const COL={grey:"#8a9199",blue:"#3b82f6",green:"#22c55e"};
+const DARK=[{elementType:"geometry",stylers:[{color:"#1e2429"}]},{elementType:"labels.text.fill",stylers:[{color:"#c4cbd1"}]},{elementType:"labels.text.stroke",stylers:[{color:"#15191d"}]},{featureType:"water",elementType:"geometry",stylers:[{color:"#0f1316"}]},{featureType:"road",elementType:"geometry",stylers:[{color:"#2b3238"}]}];
+let orders=[],map,mk={},iw;
+async function load(){if(DB){try{const r=await(await fetch(DB+"/orders.json")).json();return r?Object.values(r):[]}catch(_){return orders}}try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(_){return[]}}
+const ready=l=>orders.filter(o=>o.loc==l&&o.status=="READY");
+function state(l){if(ready(l).length)return"blue";return orders.some(o=>o.loc==l&&o.status=="DELIVERED"&&Date.now()-(o.deliveredAt||0)<6e5)?"green":"grey"}
+async function refresh(){orders=await load();drawPanel();drawMarkers()}
+function drawPanel(){$("#list").innerHTML=Object.keys(LOC).map(l=>{const c=state(l),a=ready(l);
+return `<div class="loc ${c}"><div class="lh" data-f="${l}"><i></i><b>${l}</b><span>${a.length?a.length+" to deliver":c=="green"?"Delivered":"No delivery"}</span></div>${a.map(o=>`<div class="row"><span>${esc(o.name)}</span><span>${peso(o.total)}</span></div>`).join("")}${a.length?`<button class="btn" data-l="${l}">Mark delivered (turn green)</button>`:""}</div>`}).join("")}
+$("#list").onclick=e=>{const l=e.target.dataset.l,f=e.target.closest(".lh");if(l)deliver(l);else if(f&&map){map.panTo({lat:LOC[f.dataset.f][0],lng:LOC[f.dataset.f][1]});map.setZoom(11)}};
+async function deliver(l){const a=ready(l),t=Date.now();a.forEach(o=>{o.status="DELIVERED";o.deliveredAt=t});
+try{if(DB)await Promise.all(a.map(o=>fetch(DB+"/orders/"+o.id+".json",{method:"PATCH",body:JSON.stringify({status:"DELIVERED",deliveredAt:t})})));else{localStorage.setItem(KEY,JSON.stringify(orders));try{new BroadcastChannel(KEY).postMessage("upd")}catch(_){}}}catch(_){}refresh()}
+const icon=(l,c)=>({url:"data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="52"><circle cx="60" cy="14" r="11" fill="${c}" stroke="#fff" stroke-width="3"/><text x="60" y="44" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#fff" stroke="#15191d" stroke-width="3" paint-order="stroke">${l}</text></svg>`),scaledSize:new google.maps.Size(120,52),anchor:new google.maps.Point(60,14)});
+function drawMarkers(){if(!map)return;for(const l in LOC){if(!mk[l]){mk[l]=new google.maps.Marker({map,title:l,position:{lat:LOC[l][0],lng:LOC[l][1]}});mk[l].addListener("click",()=>{iw.setContent(`<div style="color:#15191d"><b>${l}</b><br>${ready(l).length} to deliver</div>`);iw.open(map,mk[l])})}mk[l].setIcon(icon(l,COL[state(l)]))}}
+window.initMap=()=>{map=new google.maps.Map($("#map"),{center:{lat:13.5,lng:123.4},zoom:8,styles:DARK,mapTypeControl:false,streetViewControl:false});iw=new google.maps.InfoWindow();const b=new google.maps.LatLngBounds();for(const l in LOC)b.extend({lat:LOC[l][0],lng:LOC[l][1]});map.fitBounds(b,60);drawMarkers()};
+window.gm_authFailure=()=>{$("#map").innerHTML='<div class="nomap">Google Maps rejected the API key. Check the key and that Maps JavaScript API is enabled for this website address.</div>'};
+if(MAPS_KEY){const s=document.createElement("script");s.src="https://maps.googleapis.com/maps/api/js?key="+MAPS_KEY+"&callback=initMap";s.async=true;document.head.append(s)}else $("#map").innerHTML='<div class="nomap">Add your Google Maps API key to MAPS_KEY at the top of this file to show the map.</div>';
+addEventListener("storage",e=>{if(e.key==KEY)refresh()});try{new BroadcastChannel(KEY).onmessage=refresh}catch(_){}
+setInterval(refresh,3000);refresh();
 </script>
 </body>
 </html>
